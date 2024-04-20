@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export default function Nav() {
     const { data: session, status } = useSession()
+    
 
     return (
         <header className="bg-[#d7dac5] border-b text-white py-4">
@@ -14,6 +15,12 @@ export default function Nav() {
                 <Link href="/">
                     <img src="https://www.grutto.com/static/media/grutto-new-logo.2222fbee19ce71dc3ace.svg" className="h-12" alt="Grutto" />
                 </Link>
+
+                {
+                    status == 'loading' && (
+                        <div className="bg-gray-700/10 h-10 rounded w-32 animate-pulse"></div>
+                    )
+                }
 
                 {
                     status == 'unauthenticated' && (
@@ -35,12 +42,12 @@ export default function Nav() {
                                     Admin Panel
                                 </Button>
                             </Link>
-                            <Link href="/auth/logout">
+                            {/* <Link href="/auth/logout">
                                 <Button variant={"outline"}>
                                     <LogOut className="w-4 h-4 mr-2" />
                                     Sign Out
                                 </Button>
-                            </Link>
+                            </Link> */}
                         </div>
                     )
                 }

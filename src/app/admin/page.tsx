@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from '@/components/loading';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -20,7 +21,7 @@ const DashboardPage: React.FC = () => {
     }, [status]);
 
     if (status === 'loading') {
-        return <div>Loading...</div>;
+        return <Loading />;
     }
 
     return (

@@ -4,3 +4,8 @@ interface CategoryInterface {
     slug: string,
     children: CategoryInterface[]
 }
+interface CategorySingleInterface {
+    category: CategoryInterface,
+    top_articles: PostInterface[],
+    articles: PostInterface[]
+}

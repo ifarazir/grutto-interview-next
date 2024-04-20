@@ -18,14 +18,14 @@ export default function AdminNav() {
                     </Button>
                 </Link>
 
-                <Link href="/admin">
+                <Link href="/admin/categories">
                     <Button variant={"link"} className="p-0">
                         <GalleryHorizontalEnd className="w-4 h-4 mr-2" />
                         Categories
                     </Button>
                 </Link>
                 
-                <Link href="/admin">
+                <Link href="/admin/tags">
                     <Button variant={"link"} className="p-0">
                         <Hash className="w-4 h-4 mr-2" />
                         Tags

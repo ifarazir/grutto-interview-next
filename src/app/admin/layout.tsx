@@ -2,6 +2,7 @@
 
 import AdminNav from "@/components/adminNav";
 import Nav from "@/components/nav"
+import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from 'next-auth/react';
 
 export default function AdminLayout({
@@ -13,6 +14,7 @@ export default function AdminLayout({
         <SessionProvider>
             <Nav />
             <AdminNav />
+            <Toaster />
             <main>{children}</main>
         </SessionProvider>
     )

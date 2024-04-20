@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { fetchAdminCategories } from "@/app/api/category";
-import { fetchAdminTags } from "@/app/api/tag";
+import { fetchAdminCategories } from "@/app/api/category/admin";
+import { fetchAdminTags } from "@/app/api/tag/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { z } from "zod";
 import {
     Form,
@@ -35,6 +35,10 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils";
+import { storeAdminPost } from "@/app/api/post/admin";
+import { useRouter } from "next/navigation";
+import { CreateCategory } from "@/components/create-category";
+import { CreateTag } from "@/components/create-tag";
 
 
 const frameworks = [
@@ -114,6 +118,27 @@ export default function FormSection() {
     const [externalUrls, setExternalUrls] = useState<string[]>(form.getValues("external_urls"));
     const [selectTagOpen, setSelectTagOpen] = useState<Boolean>(false);
 
+    const router = useRouter();
+
+    const mutation = useMutation({
+        mutationFn: async (data: z.infer<typeof FormSchema>) => {
+            const post = await storeAdminPost(
+                authSession.token,
+                parseInt(data.category_id),
+                data.title,
+                data.content,
+                data.tags.map(tag => parseInt(tag)),
+                data.external_urls
+            );
+
+            return post;
+        },
+        onError: (error) => {
+            console.error(error);
+        },
+        mutationKey: "createPost",
+    })
+
     const addExternalUrl = () => {
         setExternalUrls([...externalUrls, ""]);
         form.setValue("external_urls", [...externalUrls, ""]);
@@ -137,14 +162,18 @@ export default function FormSection() {
     }
 
     const onSubmit = (data: z.infer<typeof FormSchema>) => {
-        toast({
-            title: "You submitted the following values:",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                </pre>
-            ),
-        });
+        // toast({
+        //     title: "You submitted the following values:",
+        //     description: (
+        //         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+        //             <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        //         </pre>
+        //     ),
+        // });
+        mutation.mutate(data);
+
+        router.push("/admin/posts");
+
     };
 
     return (
@@ -166,51 +195,55 @@ export default function FormSection() {
                             )}
                         />
 
-                        <FormField
-                            control={form.control}
-                            name="category_id"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a category" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {categories?.map(category => (
-                                                <SelectItem key={category.id} value={category.id.toString()}>
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="flex flex-col">
+                            <FormField
+                                control={form.control}
+                                name="category_id"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Category</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {categories?.map(category => (
+                                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                                        {category.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <CreateCategory />
+                        </div>
+
 
                         <FormItem className="flex flex-col">
                             <FormLabel>Tags</FormLabel>
-                            <Popover open={selectTagOpen} onOpenChange={setSelectTagOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={selectTagOpen}
-                                        className="w-[200px] border-gray-200 justify-between"
-                                    >
-                                        Select a Tag...
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[200px] p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Search Tag..." />
-                                        <CommandEmpty>No Tag found.</CommandEmpty>
-                                        <CommandGroup>
-                                            <CommandList>
+                            <div className="flex items-center gap-5">
+                                <Popover open={selectTagOpen} onOpenChange={setSelectTagOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={selectTagOpen}
+                                            className="w-[200px] border-gray-200 justify-between"
+                                        >
+                                            Select a Tag...
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[200px] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Search Tag..." />
+                                            <CommandEmpty>No Tag found.</CommandEmpty>
+                                            <CommandGroup>
                                                 {tags?.map((tag) => {
                                                     return (
                                                         <CommandItem
@@ -232,21 +265,22 @@ export default function FormSection() {
                                                         </CommandItem>
                                                     )
                                                 })}
-                                            </CommandList>
-                                        </CommandGroup>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+                                            </CommandGroup>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <CreateTag />
+                            </div>
 
 
-                            {/* <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-2">
                                 {form.getValues("tags").map((tag, index) => (
                                     <Button key={index} size="sm" variant="outline" onClick={() => removeTag(tag)}>
-                                        {tags?.find(t => t.id === tag)?.name || tag}
+                                        {tags?.find(t => t.id.toString() === tag)?.name}
                                         <Minus size={20} className="ml-2" />
                                     </Button>
                                 ))}
-                            </div> */}
+                            </div>
                         </FormItem>
 
                         <div className="flex flex-col gap-3">
@@ -296,6 +330,6 @@ export default function FormSection() {
                     </form>
                 </Form>
             </CardContent>
-        </Card>
+        </Card >
     );
 }

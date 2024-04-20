@@ -3,17 +3,15 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import PostsTable from './table';
 import { Card } from '@/components/ui/card';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
+import { CreateTag } from '@/components/create-tag';
+import TagsTable from './table';
 import Loading from '@/components/loading';
 
 const queryClient = new QueryClient()
 
-const DashboardPostsPage: React.FC = () => {
+const DashboardTagsPage: React.FC = () => {
     const { data: session, status } = useSession()
     const router = useRouter();
 
@@ -33,27 +31,22 @@ const DashboardPostsPage: React.FC = () => {
     }
 
     return (
-        <div className="container mx-auto py-5">
-            <div className='flex items-center justify-between mb-3'>
-                <h1 className="text-3xl font-bold">Posts</h1>
+        <QueryClientProvider client={queryClient}>
+            <div className="container mx-auto py-5">
+                <div className='flex items-center justify-between mb-3'>
+                    <h1 className="text-3xl font-bold">Tags</h1>
 
-                <Link href="/admin/posts/create">
-                    <Button>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Post
-                    </Button>
-                </Link>
-            </div>
+                    <CreateTag />
+                </div>
 
-            <div className="w-full flex flex-col gap-5">
-                <QueryClientProvider client={queryClient}>
+                <div className="w-full flex flex-col gap-5">
                     <Card>
-                        <PostsTable />
+                        <TagsTable />
                     </Card>
-                </QueryClientProvider>
-            </div>
-        </div >
+                </div>
+            </div >
+        </QueryClientProvider>
     );
 };
 
-export default DashboardPostsPage;
+export default DashboardTagsPage;
